@@ -21,7 +21,7 @@
 
 <h3>インストール方法（簡易版）</h3>
 インストールのコマンド:<br>
-<pre>curl https://raw.githubusercontent.com/tkmcmaster/MinecraftBedrockServer/master/SetupMinecraft.sh | bash</pre>
+<pre>curl https://raw.githubusercontent.com/tkmcmaster/MinecraftBedrockServer/mcmaster-personalize/SetupMinecraft.sh | bash</pre>
 
 <h3>インストールガイド</h3>
 <a href="https://jamesachambers.com/minecraft-bedrock-edition-ubuntu-dedicated-server-guide/">Minecraft Bedrock Dedicated Server Script Installation / Configuration Guide</a>
@@ -113,7 +113,7 @@
     <li>Added default language header to curl as non-english computers were getting an Access Denied error</li>
     <li>Script now checks for gawk being present in start.sh.  If it's not installed (likely due to reusing old SetupMinecraft.sh files) timestamps will be disabled.  This will prevent the server from failing to start.  This is avoided by not running an old copy of SetupMinecraft.sh!</li>
     <li>Removed broken screen -r command at the end of SetupMinecraft.sh as fixing it actually causes lockups -- instead now gives the command (screen -r) to pull up the Minecraft console.  Press Ctrl+A then Ctrl+D to hide the console once you're inside it.</li>
-    <li>Added code to prevent SetupMinecraft.sh from being ran as a local file (please use the new method of curl https://raw.githubusercontent.com/tkmcmaster/MinecraftBedrockServer/master/SetupMinecraft.sh | bash)</li>
+    <li>Added code to prevent SetupMinecraft.sh from being ran as a local file (please use the new method of curl https://raw.githubusercontent.com/tkmcmaster/MinecraftBedrockServer/mcmaster-personalize/SetupMinecraft.sh | bash)</li>
   </ul>
   <li>July 2nd 2021</li>
   <ul>
