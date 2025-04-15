@@ -14,7 +14,7 @@ else
     echo "Unable to set path variable.  You likely need to download an updated version of SetupMinecraft.sh from GitHub!"
 fi
 
-rm -rf dirname/minecraftbe/servername/downloads
-rm -f dirname/minecraftbe/servername/version_pin.txt
-rm -f dirname/minecraftbe/servername/version_installed.txt
+rm -rf /opt/minecraft/downloads
+rm -f /opt/minecraft/version_pin.txt
+rm -f /opt/minecraft/version_installed.txt
 echo "All folders have been cleaned!"

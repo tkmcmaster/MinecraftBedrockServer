@@ -118,11 +118,11 @@ Update_Scripts() {
 Update_Service() {
   # Update minecraft server service
   echo "Configuring Minecraft $ServerName service..."
-  sudo curl -H "Accept-Encoding: identity" -L -o /etc/systemd/system/$ServerName.service https://raw.githubusercontent.com/tkmcmaster/MinecraftBedrockServer/mcmaster-personalize/minecraftbe.service
-  sudo chmod +x /etc/systemd/system/$ServerName.service
-  sudo sed -i "s:userxname:$UserName:g" /etc/systemd/system/$ServerName.service
-  sudo sed -i "s:dirname:$DirName:g" /etc/systemd/system/$ServerName.service
-  sudo sed -i "s:servername:$ServerName:g" /etc/systemd/system/$ServerName.service
+  sudo curl -H "Accept-Encoding: identity" -L -o /etc/systemd/system/minecraft-server.service https://raw.githubusercontent.com/tkmcmaster/MinecraftBedrockServer/mcmaster-personalize/minecraftbe.service
+  sudo chmod +x /etc/systemd/system/minecraft-server.service
+  sudo sed -i "s:userxname:$UserName:g" /etc/systemd/system/minecraft-server.service
+  sudo sed -i "s:dirname:$DirName:g" /etc/systemd/system/minecraft-server.service
+  sudo sed -i "s:servername:$ServerName:g" /etc/systemd/system/minecraft-server.service
   if [ -e server.properties ]; then
     sed -i "/server-port=/c\server-port=$PortIPV4" server.properties
     sed -i "/server-portv6=/c\server-portv6=$PortIPV6" server.properties
@@ -133,7 +133,7 @@ Update_Service() {
   echo -n "Start Minecraft server at startup automatically (y/n)?"
   read answer </dev/tty
   if [[ "$answer" != "${answer#[Yy]}" ]]; then
-    sudo systemctl enable $ServerName.service
+    sudo systemctl enable minecraft-server.service
     # Automatic reboot at 4am configuration
     TimeZone=$(cat /etc/timezone)
     CurrentTime=$(date)
@@ -142,7 +142,7 @@ Update_Service() {
     echo -n "Automatically restart and backup server at 4am daily (y/n)?"
     read answer </dev/tty
     if [[ "$answer" != "${answer#[Yy]}" ]]; then
-      croncmd="$DirName/minecraftbe/$ServerName/restart.sh 2>&1"
+      croncmd="/opt/minecraft/restart.sh 2>&1"
       cronjob="0 4 * * * $croncmd"
       (
         crontab -l | grep -v -F "$croncmd"
@@ -278,9 +278,9 @@ Check_Architecture() {
     sudo mkdir /lib64
     # Create soft link ld-linux-x86-64.so.2 mapped to ld-2.31.so, ld-2.33.so, ld-2,35.so
     sudo rm -rf /lib64/ld-linux-x86-64.so.2
-    sudo ln -s $DirName/minecraftbe/$ServerName/ld-2.31.so /lib64/ld-linux-x86-64.so.2
-    sudo ln -s $DirName/minecraftbe/$ServerName/ld-2.33.so /lib64/ld-linux-x86-64.so.2
-    sudo ln -s $DirName/minecraftbe/$ServerName/ld-2.35.so /lib64/ld-linux-x86-64.so.2
+    sudo ln -s /opt/minecraft/ld-2.31.so /lib64/ld-linux-x86-64.so.2
+    sudo ln -s /opt/minecraft/ld-2.33.so /lib64/ld-linux-x86-64.so.2
+    sudo ln -s /opt/minecraft/ld-2.35.so /lib64/ld-linux-x86-64.so.2
   elif [[ "$CPUArch" == *"arm"* ]]; then
     # ARM architecture detected -- download QEMU and dependency libraries
     echo "WARNING: ARM 32 platform detected -- This is not recommended.  64 bit ARM (aarch64) can use Box64 for emulation.  It is recommended to upgrade to a 64 bit OS."
@@ -308,9 +308,9 @@ Check_Architecture() {
     sudo mkdir /lib64
     # Create soft link ld-linux-x86-64.so.2 mapped to ld-2.31.so, ld-2.33.so, ld-2,35.so
     sudo rm -rf /lib64/ld-linux-x86-64.so.2
-    sudo ln -s $DirName/minecraftbe/$ServerName/ld-2.31.so /lib64/ld-linux-x86-64.so.2
-    sudo ln -s $DirName/minecraftbe/$ServerName/ld-2.33.so /lib64/ld-linux-x86-64.so.2
-    sudo ln -s $DirName/minecraftbe/$ServerName/ld-2.35.so /lib64/ld-linux-x86-64.so.2
+    sudo ln -s /opt/minecraft/ld-2.31.so /lib64/ld-linux-x86-64.so.2
+    sudo ln -s /opt/minecraft/ld-2.33.so /lib64/ld-linux-x86-64.so.2
+    sudo ln -s /opt/minecraft/ld-2.35.so /lib64/ld-linux-x86-64.so.2
   fi
 
   # Check for x86 (32 bit) architecture
@@ -323,7 +323,7 @@ Check_Architecture() {
 
 Update_Sudoers() {
   if [ -d /etc/sudoers.d ]; then
-    sudoline="$UserName ALL=(ALL) NOPASSWD: /bin/bash $DirName/minecraftbe/$ServerName/fixpermissions.sh -a, /bin/systemctl start $ServerName, /bin/bash $DirName/minecraftbe/$ServerName/start.sh"
+    sudoline="$UserName ALL=(ALL) NOPASSWD: /bin/bash /opt/minecraft/fixpermissions.sh -a, /bin/systemctl start minecraft-server, /bin/bash /opt/minecraft/start.sh"
     if [ -e /etc/sudoers.d/minecraftbe ]; then
       AddLine=$(sudo grep -qxF "$sudoline" /etc/sudoers.d/minecraftbe || echo "$sudoline" | sudo tee -a /etc/sudoers.d/minecraftbe)
     else
@@ -352,26 +352,26 @@ fi
 Check_Dependencies
 
 # Check to see if Minecraft server main directory already exists
-cd $DirName
-if [ ! -d "minecraftbe" ]; then
-  mkdir minecraftbe
-  cd minecraftbe
-else
-  cd minecraftbe
-  if [ -f "bedrock_server" ]; then
-    echo "Migrating old Bedrock server to minecraftbe/old"
-    cd $DirName
-    mv minecraftbe old
-    mkdir minecraftbe
-    mv old minecraftbe/old
-    cd minecraftbe
-    echo "Migration complete to minecraftbe/old"
-  fi
-fi
+# cd $DirName
+# if [ ! -d "minecraftbe" ]; then
+#   mkdir minecraftbe
+#   cd minecraftbe
+# else
+#   cd minecraftbe
+#   if [ -f "bedrock_server" ]; then
+#     echo "Migrating old Bedrock server to minecraftbe/old"
+#     cd $DirName
+#     mv minecraftbe old
+#     mkdir minecraftbe
+#     mv old minecraftbe/old
+#     cd minecraftbe
+#     echo "Migration complete to minecraftbe/old"
+#   fi
+# fi
 
 # Server name configuration
 echo "Enter a short one word label for a new or existing server (don't use minecraftbe)..."
-echo "It will be used in the folder name and service name..."
+echo "It will be used in the folder name and service name... - Suggestion 'mcmaster'"
 
 read_with_prompt ServerName "Server Label"
 
@@ -395,9 +395,10 @@ if [ -d "$ServerName" ]; then
   # Get username
   UserName=$(whoami)
   cd $DirName
-  cd minecraftbe
-  cd $ServerName
-  echo "Server directory is: $DirName/minecraftbe/$ServerName"
+  # cd minecraftbe
+  # cd $ServerName
+  # echo "Server directory is: /opt/minecraft"
+  echo "Server directory is: $DirName"
 
   # Update Minecraft server scripts
   Update_Scripts
@@ -414,17 +415,17 @@ if [ -d "$ServerName" ]; then
   # Setup completed
   echo "Setup is complete.  Starting Minecraft $ServerName server.  To view the console use the command screen -r or check the logs folder if the server fails to start"
   sudo systemctl daemon-reload
-  sudo systemctl start "$ServerName.service"
+  sudo systemctl start "minecraft-server.service"
 
   exit 0
 fi
 
 # Create server directory
-echo "Creating minecraft server directory ($DirName/minecraftbe/$ServerName)..."
+echo "Creating minecraft server directory (/opt/minecraft)..."
 cd $DirName
-cd minecraftbe
-mkdir $ServerName
-cd $ServerName
+# cd minecraftbe
+# mkdir $ServerName
+# cd $ServerName
 mkdir downloads
 mkdir backups
 mkdir logs
@@ -449,7 +450,7 @@ Fix_Permissions
 # Finished!
 echo "Setup is complete.  Starting Minecraft server. To view the console use the command screen -r or check the logs folder if the server fails to start."
 sudo systemctl daemon-reload
-sudo systemctl start "$ServerName.service"
+sudo systemctl start "minecraft-server.service"
 
 # Wait up to 30 seconds for server to start
 StartChecks=0

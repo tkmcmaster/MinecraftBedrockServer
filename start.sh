@@ -28,7 +28,7 @@ if screen -list | grep -q '\.servername\s'; then
 fi
 
 # Change directory to server directory
-cd dirname/minecraftbe/servername
+cd /opt/minecraft
 
 # Create logs/backups/downloads folder if it doesn't exist
 if [ ! -d "logs" ]; then
@@ -64,7 +64,7 @@ while [ -z "$DefaultRoute" ]; do
 done
 
 # Take ownership of server files and set correct permissions
-Permissions=$(sudo bash dirname/minecraftbe/servername/fixpermissions.sh -a)
+Permissions=$(sudo bash /opt/minecraft/fixpermissions.sh -a)
 
 # Create backup
 if [ -d "worlds" ]; then
@@ -80,7 +80,7 @@ fi
 
 # Rotate backups -- keep most recent 10
 Rotate=$(
-    pushd dirname/minecraftbe/servername/backups
+    pushd /opt/minecraft/backups
     ls -1tr | head -n -10 | xargs -d '\n' rm -f --
     popd
 )
@@ -125,12 +125,12 @@ else
 
         # Install version of Minecraft requested
         if [ ! -z "$DownloadFile" ]; then
-            if [ ! -e dirname/minecraftbe/servername/server.properties ]; then
+            if [ ! -e /opt/minecraft/server.properties ]; then
                 unzip -o "downloads/$DownloadFile" -x "*permissions.json*" "*whitelist.json*" "*valid_known_packs.json*" "*allowlist.json*"
             else
                 unzip -o "downloads/$DownloadFile" -x "*server.properties*" "*permissions.json*" "*whitelist.json*" "*valid_known_packs.json*" "*allowlist.json*"
             fi
-            Permissions=$(chmod u+x dirname/minecraftbe/servername/bedrock_server >/dev/null)
+            Permissions=$(chmod u+x /opt/minecraft/bedrock_server >/dev/null)
             echo "$DownloadFile" >version_installed.txt
         fi
     elif [[ "$InstalledFile" == "$LatestFile" ]]; then
@@ -147,30 +147,30 @@ else
 
         # Install version of Minecraft requested
         if [ ! -z "$DownloadFile" ]; then
-            if [ ! -e dirname/minecraftbe/servername/server.properties ]; then
+            if [ ! -e /opt/minecraft/server.properties ]; then
                 unzip -o "downloads/$DownloadFile" -x "*permissions.json*" "*whitelist.json*" "*valid_known_packs.json*" "*allowlist.json*"
             else
                 unzip -o "downloads/$DownloadFile" -x "*server.properties*" "*permissions.json*" "*whitelist.json*" "*valid_known_packs.json*" "*allowlist.json*"
             fi
-            Permissions=$(chmod u+x dirname/minecraftbe/servername/bedrock_server >/dev/null)
+            Permissions=$(chmod u+x /opt/minecraft/bedrock_server >/dev/null)
             echo "$DownloadFile" >version_installed.txt
         fi
     fi
 fi
 
-if [ ! -e dirname/minecraftbe/servername/allowlist.json ]; then
+if [ ! -e /opt/minecraft/allowlist.json ]; then
     echo "Creating default allowlist.json..."
-    echo '[]' >dirname/minecraftbe/servername/allowlist.json
+    echo '[]' >/opt/minecraft/allowlist.json
 fi
-if [ ! -e dirname/minecraftbe/servername/permissions.json ]; then
+if [ ! -e /opt/minecraft/permissions.json ]; then
     echo "Creating default permissions.json..."
-    echo '[]' >dirname/minecraftbe/servername/permissions.json
+    echo '[]' >/opt/minecraft/permissions.json
 fi
-ContentLogging=$(grep "content-log-file-enabled" dirname/minecraftbe/servername/server.properties)
+ContentLogging=$(grep "content-log-file-enabled" /opt/minecraft/server.properties)
 if [ -z "$ContentLogging" ]; then
-    echo "" >> dirname/minecraftbe/servername/server.properties
-    echo "content-log-file-enabled=true" >> dirname/minecraftbe/servername/server.properties
-    echo "# Enables logging content errors to a file" >> dirname/minecraftbe/servername/server.properties
+    echo "" >> /opt/minecraft/server.properties
+    echo "content-log-file-enabled=true" >> /opt/minecraft/server.properties
+    echo "# Enables logging content errors to a file" >> /opt/minecraft/server.properties
 fi
 
 echo "Starting Minecraft server.  To view window type screen -r servername"
@@ -178,14 +178,14 @@ echo "To minimize the window and let the server run in the background, press Ctr
 
 CPUArch=$(uname -m)
 if [[ "$CPUArch" == *"aarch64"* ]]; then
-    cd dirname/minecraftbe/servername
+    cd /opt/minecraft
     if [ -n "$(which box64)" ]; then
         BASH_CMD="box64 bedrock_server"
     else
-        BASH_CMD="LD_LIBRARY_PATH=dirname/minecraftbe/servername dirname/minecraftbe/servername/bedrock_server"
+        BASH_CMD="LD_LIBRARY_PATH=/opt/minecraft /opt/minecraft/bedrock_server"
     fi
 else
-    BASH_CMD="LD_LIBRARY_PATH=dirname/minecraftbe/servername dirname/minecraftbe/servername/bedrock_server"
+    BASH_CMD="LD_LIBRARY_PATH=/opt/minecraft /opt/minecraft/bedrock_server"
 fi
 
 if command -v gawk &>/dev/null; then
