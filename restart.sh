@@ -64,10 +64,10 @@ if screen -list | grep -q '\.servername\s'; then
 fi
 
 # Start server (start.sh) - comment out if you want to use systemd and have added a line to your sudoers allowing passwordless sudo for the start command using 'sudo visudo' and insert the example line below with the correct username
-#/bin/bash dirname/minecraftbe/servername/start.sh
+#/bin/bash /opt/minecraft/start.sh
 
 # EXAMPLE SUDO LINE
 # minecraftuser ALL=(ALL) NOPASSWD: /bin/systemctl start yourservername
 
-# If you have added the above example sudo line to your sudoers file with 'sudo visudo' and the correct username uncomment the line below (make sure you comment out the /bin/bash dirname/minecraftbe/servername/start.sh line)
+# If you have added the above example sudo line to your sudoers file with 'sudo visudo' and the correct username uncomment the line below (make sure you comment out the /bin/bash /opt/minecraft/start.sh line)
 sudo -n systemctl start servername
